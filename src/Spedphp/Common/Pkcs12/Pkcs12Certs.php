@@ -12,10 +12,11 @@
 namespace Spedphp\Common\Pkcs12;
 
 use Spedphp\Common\Pkcs12\Asn;
+use Spedphp\Common\Exception;
 
 class Pkcs12Certs
 {
-    //propriedades da clase
+    //propriedades da classe
     public $certsDir;
     public $pfxName;
     public $cnpj;
@@ -36,20 +37,42 @@ class Pkcs12Certs
     const URLTRANSFMETH2 = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315';
     const URLDIGESTMETH = 'http://www.w3.org/2000/09/xmldsig#sha1';
     
+    /**
+     * __construct
+     * Método de construção da classe
+     * @param string $dir Path para a pasta que contêm os certificados digitais
+     * @param string $cnpj CNPJ do emitente, sem  ./-, apenas os numeros
+     * @throws Exception\InvalidArgumentException
+     */
     public function __construct($dir, $cnpj)
     {
-        //limpar bobagens
+        if (!is_dir(trim($dir))) {
+            throw new Exception\InvalidArgumentException(
+                "Um path válido para os certificados deve ser passado. Diretório $dir não foi localizado."
+            );
+        }
         $this->certsDir = trim($dir);
+        if (strlen(trim($cnpj))!= 14) {
+            throw new Exception\InvalidArgumentException(
+                "Um CNPJ válido deve ser passado e são permitidos apenas números. Valor passado [$cnpj]."
+            );
+        }
         $this->cnpj = trim($cnpj);
         $this->init();
     }//fim __construct
     
+    /**
+     * init
+     * Método de inicialização da classe irá verificar 
+     * os parâmetros, arquivos e validade dos mesmos
+     * Em caso de erro o motivo da falha será indicada na parâmetro
+     * error da classe, os outros parâmetros serão limpos e os 
+     * arquivos inválidos serão removidos da pasta
+     * 
+     * @return boolean 
+     */
     private function init()
     {
-        if (!is_dir($this->certsDir)) {
-            $this->error = "O caminho para os arquivos dos certificados deve ser passado!!";
-            return false;
-        }
         if (substr($this->certsDir, -1) !== DIRECTORY_SEPARATOR) {
             $this->certsDir .= DIRECTORY_SEPARATOR;
         }
@@ -75,33 +98,100 @@ class Pkcs12Certs
                 //já que o certificado existe, verificar seu prazo de validade
                 return $this->validCerts($this->pubKey);
             }
+        } else {
+            $this->error = "Certificados não localizados!!";
+            return false;
         }
         return true;
     }//fim init
+
+    /**
+     * removePemFiles
+     * Apaga os arquivos PEM do diretório
+     * Isso deve ser feito quando um novo certificado é carregado
+     * ou quando a validade do certificado expirou.
+     * 
+     */
+    private function removePemFiles()
+    {
+        if (is_file($this->pubKeyFile)) {
+            unlink($this->pubKeyFile);
+        }
+        if (is_file($this->priKeyFile)) {
+            unlink($this->priKeyFile);
+        }
+        if (is_file($this->certKeyFile)) {
+            unlink($this->certKeyFile);
+        }
+    }//fim removePemFiles
     
-    public function loadNewCert($pfxName,$keyPass)
+    /**
+     * leaveParam
+     * Limpa os parametros da classe
+     * 
+     */
+    private function leaveParam()
+    {
+        $this->pfxName='';
+        $this->pubKey='';
+        $this->priKey='';
+        $this->certKey='';
+        $this->pubKeyFile='';
+        $this->priKeyFile='';
+        $this->certKeyFile='';
+        $this->expireTimestamp='';
+    }// fim leaveParam
+    
+    /**
+     * loadNewCert
+     * Carrega um novo certificado no formato PFX, isso deverá 
+     * ocorrer a cada atualização do certificado digital, ou seja,
+     * pelo menos uma vez por ano, uma vez que a validade do certificado 
+     * é anual.
+     * Será verificado também se o certificado pertence realmente ao CNPJ
+     * indicado na instanciação da classe, se não for um erro irá ocorrer e 
+     * o certificado não será convertido para o formato PEM.
+     * Em caso de erros, será retornado false e o motivo será indicado no
+     * parâmetro error da classe.
+     * Os certificados serão armazenados como <CNPJ>-<tipo>.pem  
+     * 
+     * @param string $pfxName Nome do arquivo PFX que foi salvo na pasta dos certificados
+     * @param string $keyPass Senha de acesso ao certificado PFX
+     * @return boolean
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\RuntimeException
+     */
+    public function loadNewCert($pfxName, $keyPass = '')
     {
         //monta o caminho completo até o certificado pfx
         $pfxCert = $this->certsDir.$pfxName;
         if (!is_file($pfxCert)) {
-            $this->error = "Arquivo não localizado! [$pfxCert]";
+            throw new Exception\InvalidArgumentException(
+                "O nome do arquivo PFX deve ser passado. Não foi localizado o arquivo [$pfxCert]."
+            );
+        }
+        if ($keyPass == '') {
+            throw new Exception\InvalidArgumentException(
+                "A senha de acesso para o certificado pfx não pode ser vazia."
+            );
         }
         //carrega o certificado em um string
         $pfxContent = file_get_contents($pfxCert);
         //carrega os certificados e chaves para um array denominado $x509certdata
         if (!openssl_pkcs12_read($pfxContent, $x509certdata, $keyPass)) {
-            $this->error = "O certificado não pode ser lido!! 
-                Senha errada ou arquivo corrompido ou formato inválido!!";
-            return false;
+            throw new Exception\RuntimeException(
+                "O certificado não pode ser lido!! Senha errada ou arquivo corrompido ou formato inválido!!"
+            );
         }
         //verifica sua data de validade
         if (!$this->validCerts($x509certdata['cert'])) {
-            return false;
+            throw new Exception\RuntimeException($this->error);
         }
         $cnpjCert = Asn::getCNPJCert($x509certdata['cert']);
         if ($this->cnpj != $cnpjCert) {
-            $this->error = "O Certificado informado pertence a outro CNPJ!!";
-            return false;
+            throw new Exception\InvalidArgumentException(
+                "O Certificado fornecido pertence a outro CNPJ!!"
+            );
         }
         //monta o path completo com o nome da chave privada
         $this->priKeyFile = $this->certsDir.$this->cnpj.'_priKEY.pem';
@@ -111,7 +201,11 @@ class Pkcs12Certs
         $this->certKeyFile = $this->certsDir.$this->cnpj.'_certKEY.pem';
         $this->removePemFiles();
         //recriar os arquivos pem com o arquivo pfx
-        file_put_contents($this->priKeyFile, $x509certdata['pkey']);
+        if (!file_put_contents($this->priKeyFile, $x509certdata['pkey'])) {
+            throw new Exception\RuntimeException(
+                "Falha de permissão de escrita na pasta dos certificados!!"
+            );
+        }
         file_put_contents($this->pubKeyFile, $x509certdata['cert']);
         file_put_contents($this->certKeyFile, $x509certdata['pkey']."\r\n".$x509certdata['cert']);
         $this->pubKey=$x509certdata['cert'];
@@ -119,7 +213,17 @@ class Pkcs12Certs
         $this->certKey=$x509certdata['pkey']."\r\n".$x509certdata['cert'];
         return true;
     } //fim loadCerts
-
+    
+    /**
+     * signXML
+     * Método que provê a assinatura do xml
+     * 
+     * @param string $docxml Path completo para o xml ou o próprio xml em uma string
+     * @param string $tagid TAG a ser assinada
+     * @return mixed false em caso de erro ou uma string com o conteudo do xml já assinado
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\RuntimeException
+     */
     public function signXML($docxml, $tagid)
     {
         if (is_file($docxml)) {
@@ -143,7 +247,9 @@ class Pkcs12Certs
         if ($xmldoc->loadXML($xml, LIBXML_NOBLANKS | LIBXML_NOEMPTYTAG)) {
             $root = $xmldoc->documentElement;
         } else {
-            $msg = "Erro ao carregar XML, provavel erro na passagem do parâmetro docxml ou no próprio xml!!";
+            throw new Exception\InvalidArgumentException(
+                "Erro ao carregar XML, provavel erro na passagem do parâmetro docxml ou no próprio xml!!"
+            );
             $errors = libxml_get_errors();
             if (!empty($errors)) {
                 $eIndex = 1;
@@ -153,12 +259,14 @@ class Pkcs12Certs
                 }
                 libxml_clear_errors();
             }
-            throw new NfephpException($msg);
+            throw new Exception\RuntimeException($msg);
         }
-        $node = $xmldoc->getElementsByTagName($tagid)->item(0);//extrair a tag com os dados a serem assinados
+        //extrair a tag com os dados a serem assinados
+        $node = $xmldoc->getElementsByTagName($tagid)->item(0);
         if (!isset($node)) {
-            $msg = "A tag < $tagid > não existe no XML!!";
-            throw new NfephpException($msg);
+            throw new Exception\RuntimeException(
+                "A tag < $tagid > não existe no XML!!"
+            );
         }
         $idNfe = trim($node->getAttribute("Id"));
         $dados = $node->C14N(false, false, null, null);//extrai os dados da tag para uma string
@@ -210,18 +318,25 @@ class Pkcs12Certs
         return $xml;
     } //fim signXML
     
-        
-    public function verifySignature($xml = '', $tag = '', &$err = '')
+    /**
+     * verifySignature
+     * Verifica a validade da assinatura digital contida no xml 
+     * 
+     * @param string $xml path para o xml ou o conteudo do mesmo em uma string
+     * @param string $tag tag que foi assinada no documento xml
+     * @return boolean
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\RuntimeException
+     */
+    public function verifySignature($xml = '', $tag = '')
     {
         if ($xml=='') {
             $msg = "O parâmetro xml está vazio.";
-            $err = $msg;
-            return false;
+            throw new Exception\InvalidArgumentException($msg);
         }
         if ($tag=='') {
             $msg = "O parâmetro tag está vazio.";
-            $err = $msg;
-            return false;
+            throw new Exception\InvalidArgumentException($msg);
         }
         // Habilita a manipulaçao de erros da libxml
         libxml_use_internal_errors(true);
@@ -236,8 +351,7 @@ class Pkcs12Certs
         $errors = libxml_get_errors();
         if (!empty($errors)) {
             $msg = "O arquivo informado não é um xml.";
-            $err = $msg;
-            return false;
+            throw new Exception\RuntimeException($msg);
         }
         $tagBase = $dom->getElementsByTagName($tag)->item(0);
         // validar digest value
@@ -246,9 +360,10 @@ class Pkcs12Certs
         $digestCalculado = base64_encode($hashValue);
         $digestInformado = $dom->getElementsByTagName('DigestValue')->item(0)->nodeValue;
         if ($digestCalculado != $digestInformado) {
-            $msg = "O conteúdo do XML não confere com o Digest Value.\nDigest calculado [{$digestCalculado}], informado no XML [{$digestInformado}].\nO arquivo pode estar corrompido ou ter sido adulterado.";
-            $err = $msg;
-            return false;
+            $msg = "O conteúdo do XML não confere com o Digest Value.\n
+                Digest calculado [{$digestCalculado}], informado no XML [{$digestInformado}].\n
+                O arquivo pode estar corrompido ou ter sido adulterado.";
+            throw new Exception\RuntimeException($msg);
         }
         // Remontando o certificado
         $x509Certificate = $dom->getElementsByTagName('X509Certificate')->item(0)->nodeValue;
@@ -257,8 +372,7 @@ class Pkcs12Certs
         $pubKey = openssl_pkey_get_public($x509Certificate);
         if ($pubKey === false) {
             $msg = "Ocorreram problemas ao remontar a chave pública. Certificado incorreto ou corrompido!!";
-            $err = $msg;
-            return false;
+            throw new Exception\RuntimeException($msg);
         }
         // remontando conteudo que foi assinado
         $signContent = $dom->getElementsByTagName('SignedInfo')->item(0)->C14N(false, false, null, null);
@@ -268,13 +382,20 @@ class Pkcs12Certs
         $resp = openssl_verify($signContent, $signContentXML, $pubKey);
         if ($resp != 1) {
             $msg = "Problema ({$resp}) ao verificar a assinatura do digital!!";
-            $err = $msg;
-            return false;
+            throw new Exception\RuntimeException($msg);
         }
         return true;
     } // fim verifySignatureXML
     
-    
+    /**
+     * validCerts
+     * Verifica a data de validade do certificado digital
+     * e compara com a data de hoje.
+     * Caso o certificado tenha expirado o mesmo será removido das
+     * pastas e o médoto irá retornar false
+     * @param string $cert
+     * @return boolean
+     */
     protected function validCerts($cert)
     {
         $data = openssl_x509_read($cert);
@@ -290,14 +411,24 @@ class Pkcs12Certs
         // compara a data de validade com a data atual
         $this->expireTimestamp = $dValid;
         if ($dHoje > $dValid) {
-            $this->error = "Data de validade vencida! [Valido até $dia/$mes/$ano]";
             $this->removePemFiles();
             $this->leaveParam();
+            $msg = "Data de validade vencida! [Valido até $dia/$mes/$ano]";
+            $this->error = $msg;
             return false;
         }
         return true;
     } //fim validCerts
     
+    /**
+     * cleanCerts
+     * Remove a informação de inicio e fim do certificado contido no 
+     * formato PEM, deixando o certificado (chave publica) pronta para ser
+     * anexada ao xml da NFe
+     * 
+     * @param string $certFile
+     * @return string
+     */
     protected function cleanCerts($certFile)
     {
         //inicializa variavel
@@ -317,34 +448,10 @@ class Pkcs12Certs
         return $data;
     }//fim cleanCerts
     
-    private function removePemFiles()
-    {
-        if (is_file($this->pubKeyFile)) {
-            unlink($this->pubKeyFile);
-        }
-        if (is_file($this->priKeyFile)) {
-            unlink($this->priKeyFile);
-        }
-        if (is_file($this->certKeyFile)) {
-            unlink($this->certKeyFile);
-        }
-    }//fim removePemFiles
-    
-    private function leaveParam()
-    {
-        $this->pfxName='';
-        $this->pubKey='';
-        $this->priKey='';
-        $this->certKey='';
-        $this->pubKeyFile='';
-        $this->priKeyFile='';
-        $this->certKeyFile='';
-        $this->expireTimestamp='';
-    }// fim leaveParam
-
     /**
      * splitLines
-     * Divide a string do certificado publico em linhas com 76 caracteres (padrão original)
+     * Divide a string do certificado publico em linhas com 
+     * 76 caracteres (padrão original)
      * 
      * @name splitLines
      * @param string $cnt certificado
