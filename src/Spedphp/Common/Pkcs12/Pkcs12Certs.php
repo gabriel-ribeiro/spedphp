@@ -48,7 +48,7 @@ class Pkcs12Certs
     {
         if (!is_dir(trim($dir))) {
             throw new Exception\InvalidArgumentException(
-                "Um path válido para os certificados deve ser passado. Diretório $dir não foi localizado."
+                "Um path válido para os certificados deve ser passado. Diretório [$dir] não foi localizado."
             );
         }
         $this->certsDir = trim($dir);
@@ -392,7 +392,8 @@ class Pkcs12Certs
      * Verifica a data de validade do certificado digital
      * e compara com a data de hoje.
      * Caso o certificado tenha expirado o mesmo será removido das
-     * pastas e o médoto irá retornar false
+     * pastas e o médoto irá retornar false.
+     * 
      * @param string $cert
      * @return boolean
      */
