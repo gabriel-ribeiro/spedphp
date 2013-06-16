@@ -49,7 +49,8 @@
         "zendframework/zend-mail": ">=2.1.5",
         "ensepar/tcpdf": "dev-master",
         "phpmailer/phpmailer": ">=v5.2.6",
-        "tonicospinelli/classgeneration": ">=1.0.0"
+        "tonicospinelli/classgeneration": ">=1.0.0",
+        "endroid/qrcode": "dev-master"
     },
     "require-dev": {
         "sebastian/phpcpd": "dev-master"
