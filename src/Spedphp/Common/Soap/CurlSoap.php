@@ -181,6 +181,7 @@ class CurlSoap
     /**
      * commCurl
      * Realiza da comunicação via cURL
+     * 
      * @param string $url
      * @param string $data
      * @param string $parametros
@@ -201,7 +202,7 @@ class CurlSoap
             } //fim if senha proxy
         }//fim if aProxy
         curl_setopt($oCurl, CURLOPT_CONNECTTIMEOUT, $this->soapTimeout);
-        curl_setopt($oCurl, CURLOPT_URL, $url.'');
+        curl_setopt($oCurl, CURLOPT_URL, $url);
         curl_setopt($oCurl, CURLOPT_PORT, 443);
         curl_setopt($oCurl, CURLOPT_VERBOSE, 1);
         curl_setopt($oCurl, CURLOPT_HEADER, 1);
@@ -210,9 +211,9 @@ class CurlSoap
         curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($oCurl, CURLOPT_SSLCERT, $this->pubKEY);
         curl_setopt($oCurl, CURLOPT_SSLKEY, $this->priKEY);
-        curl_setopt($oCurl, CURLOPT_POST, 1);
         curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1);
         if ($data != '') {
+            curl_setopt($oCurl, CURLOPT_POST, 1);
             curl_setopt($oCurl, CURLOPT_POSTFIELDS, $data);
         }
         if ($parametros != '') {
