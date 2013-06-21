@@ -9,12 +9,12 @@
  * @package   Spedphp
  */
 
-namespace Spedphp\Common\Pkcs12;
+namespace Spedphp\Common\Certificate;
 
-use Spedphp\Common\Pkcs12\Asn;
+use Spedphp\Common\Certificate\Asn;
 use Spedphp\Common\Exception;
 
-class Pkcs12Certs
+class Pkcs12
 {
     //propriedades da classe
     public $certsDir;

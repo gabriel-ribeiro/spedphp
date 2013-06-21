@@ -1,10 +1,15 @@
 <?php
 
+/**
+ * Spedphp (http://www.nfephp.org/)
+ *
+ * @link      http://github.com/nfephp-org/spedphp for the canonical source repository
+ * @copyright Copyright (c) 2008-2013 NFePHP (http://www.nfephp.org)
+ * @license   http://www.gnu.org/licenses/lesser.html LGPL v3
+ * @package   Spedphp
+ */
 
-namespace Common\Modules;
-
-use Common\Exception\NfephpException;
-
+namespace Spedphp\Common\Module;
 
 //classe de verificação dos modulos instalados no PHP
 class ModulesCheck
@@ -99,8 +104,10 @@ class ModulesCheck
         foreach ($this->Modules as $moduleName => $values) {
             // $moduleName is the key of $this->Modules, which is also module name
             $onlyModules[] = $moduleName;
+            $qqc = $values;
         }
+        $qqc = '';
         // Return array of all module names
         return $onlyModules;
     } // End function listModules();
-}
+}//fim da classe

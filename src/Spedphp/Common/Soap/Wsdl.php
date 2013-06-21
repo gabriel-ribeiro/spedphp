@@ -2,7 +2,7 @@
 
 namespace Spedphp\Common\Soap;
 
-use Spedphp\Common\Soap\CurlSoap;
+use Spedphp\Common\Soap;
 use Spedphp\Common\Exception;
 use LSS\XML2Array;
 
@@ -15,23 +15,22 @@ class Wsdl
 {
     public function updateWsdl($wsdlDir, $wsFile, $privateKey, $publicKey)
     {
-        $retorno = true;
+        //pega o conteúdo do xml com os endereços dos webservices
         $xml = file_get_contents($wsFile);
         //converte o xml em array
-        $ws = XML2Array::createArray($xml);
+        $aWS = XML2Array::createArray($xml);
         //para cada UF
-        foreach ($ws['WS']['UF'] as $uf) {
+        foreach ($aWS['WS']['UF'] as $uf) {
             $sigla = $uf['sigla'];
-            $ambiente = array('homologacao','producao');
+            $aAmb = array('homologacao','producao');
             //para cada ambiente
-            foreach ($ambiente as $amb) {
-                $h = $uf[$amb];
-                if (isset($h)) {
-                    foreach ($h as $k => $j) {
-                        $nome = $k;
-                        $url=$j['@value'];
-                        $metodo=$j['@attributes']['method'];
-                        $versao = $j['@attributes']['version'];
+            foreach ($aAmb as $amb) {
+                $aService = $uf[$amb];
+                if (isset($aService)) {
+                    foreach ($aService as $nome => $aAtt) {
+                        $url=$aAtt['@value'];
+                        $metodo=$aAtt['@attributes']['method'];
+                        //$versao = $aAtt['@attributes']['version'];
                         if ($url != '') {
                             $urlsefaz = $url.'?wsdl';
                             $fileName = $wsdlDir.DIRECTORY_SEPARATOR.$amb.DIRECTORY_SEPARATOR.
@@ -39,22 +38,29 @@ class Wsdl
                             if ($wsdl = $this->downLoadWsdl($urlsefaz, $privateKey, $publicKey)) {
                                 file_put_contents($fileName, $wsdl);
                                 chmod($fileName, 755);
-                                //echo $fileName;
-                                //return true;
                             } else {
                                 return false;
-                            }
-                        }
-                    }
+                            }//fim
+                        }//fim if url
+                    }//fim foreach
                 }
             }
         }
         return true;
     }//fim updateWsdl
     
+    /**
+     * downloadWsdl
+     * Baixa os arquivos wsdl necessários para a comunicação com 
+     * SOAP nativo
+     * @param string $url
+     * @param string $privateKey
+     * @param string $publicKey
+     * @return type
+     */
     protected function downLoadWsdl($url, $privateKey, $publicKey)
     {
-        $soap = new CurlSoap($privateKey, $publicKey, $timeout = 10);
+        $soap = new Soap\CurlSoap($privateKey, $publicKey);
         return $soap->getWsdl($url);
     }//fim downLoadWsdl
 }//fim WSDL

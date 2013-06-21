@@ -10,7 +10,7 @@
  * @package   Spedphp
  */
 
-namespace Spedphp\Common\Pkcs12;
+namespace Spedphp\Common\Certificate;
 
 class Asn
 {
