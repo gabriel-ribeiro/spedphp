@@ -1,14 +1,14 @@
 <?php
 
-namespace SpedPHP\Test\Common\Pkcs12;
+namespace SpedPHP\Test\Common\Certificate;
 
-use SpedPHP\Common\Pkcs12\Asn;
+use SpedPHP\Common\Certificate\Asn;
 
 /**
  * @category   SpedPHP
- * @package    SpedPHP\Test\Common\PKcs12
+ * @package    SpedPHP\Test\Common\Certificate
  * @copyright  Copyright (c) 2013
- * @license    http://www.gnu.org/licenses/gpl.html GNU/GPL v.3
+ * @license    http://www.gnu.org/licenses/lgpl.html GNU/LGPL v.3
  * @author     Roberto L. Machado <linux.rlm@gmail.com>
  */
 class AsnTest extends \PHPUnit_Framework_TestCase
