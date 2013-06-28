@@ -115,14 +115,17 @@ class CurlSoap
     public function send($urlservice, $namespace, $header, $body, $method)
     {
         //monta a mensagem ao webservice
-        $data = ''.'<?xml version="1.0" encoding="utf-8"?>'.'<soap12:Envelope ';
+        $data = '<?xml version="1.0" encoding="utf-8"?>'.'<soap12:Envelope ';
         $data .= 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ';
         $data .= 'xmlns:xsd="http://www.w3.org/2001/XMLSchema" ';
         $data .= 'xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">';
         $data .= '<soap12:Header>'.$header.'</soap12:Header>';
         $data .= '<soap12:Body>'.$body.'</soap12:Body>';
         $data .= '</soap12:Envelope>';
+        $data = $this->limpaMsg($data);
         //tamanho da mensagem
+        //file_put_contents('/var/tmp/phplog.xml', $data);
+        //exit;
         $tamanho = strlen($data);
         //estabelecimento dos parametros da mensagem
         $parametros = array(
@@ -142,7 +145,7 @@ class CurlSoap
             $xml = '';
         }
         //testa se um xml foi retornado
-        if ($xml === false || $xPos === false) {
+        if ($xml == '' || $xPos === false) {
             //não houve retorno
             $this->error = $this->errorCurl . $this->infoCurl['http_code'].
                     $this->faultCode[$this->infoCurl['http_code']];
@@ -255,4 +258,14 @@ class CurlSoap
         //retorna
         return $resposta;
     }//fim sendCurl
+    
+    private function limpaMsg($msg)
+    {
+        $msg = str_replace(array("\n","\r","\t"), array('','',''), $msg);
+        $msg = str_replace('> ', '>', $msg);
+        if (strpos($msg, '> ')) {
+            $this->limpaMsg($msg);
+        }
+        return $msg;
+    }//Fim limpaMsg
 }//fim da classe CurlSoap
