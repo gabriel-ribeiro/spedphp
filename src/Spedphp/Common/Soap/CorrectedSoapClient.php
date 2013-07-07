@@ -21,7 +21,7 @@ namespace Spedphp\Common\Soap;
  * @name CorrectSoapClient
  *
  */
-class CorrectedSoapClient extends SoapClient
+class CorrectedSoapClient extends \SoapClient
 {
     public function __doRequest($request, $location, $action, $version, $one_way = 0)
     {

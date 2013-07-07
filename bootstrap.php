@@ -24,7 +24,7 @@ spl_autoload_register(
     {
         $classPath = stream_resolve_include_path(
             str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php');
-
+        
         if ($classPath !== false) {
             require $classPath;
         }

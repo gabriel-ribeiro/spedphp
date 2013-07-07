@@ -73,11 +73,6 @@ class CTe
         
     }//fim manifest
     
-    public function print()
-    {
-        
-    }//fim print
-    
     public function convert()
     {
         

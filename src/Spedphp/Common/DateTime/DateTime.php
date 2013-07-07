@@ -10,9 +10,9 @@
  * @package   Spedphp
  */
 
-namespace Spedphp\Common\DataTime;
+namespace SpedPHP\Common\DataTime;
 
-class DataTime
+class DateTime
 {
     public static function st2uts($dhs)
     {

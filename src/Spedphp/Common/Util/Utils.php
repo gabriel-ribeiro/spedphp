@@ -25,11 +25,11 @@ use Spedphp\Common\Exception;
 class Utils
 {
  
-	/**
-	 * Mensagem de erro
-	 * @access public
-	 * @var string
-	 */
+    /**
+     * Mensagem de erro
+     * @access public
+     * @var string
+     */
     public $errMsg = '';
     
     /**

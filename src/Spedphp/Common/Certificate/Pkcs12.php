@@ -9,10 +9,10 @@
  * @package   Spedphp
  */
 
-namespace Spedphp\Common\Certificate;
+namespace SpedPHP\Common\Certificate;
 
-use Spedphp\Common\Certificate\Asn;
-use Spedphp\Common\Exception;
+use SpedPHP\Common\Certificate\Asn;
+use SpedPHP\Common\Exception;
 
 class Pkcs12
 {
