@@ -48,13 +48,13 @@ class Pkcs12
     {
         if (!is_dir(trim($dir))) {
             throw new Exception\InvalidArgumentException(
-                "Um path válido para os certificados deve ser passado. Diretório [$dir] não foi localizado."
+                "Um path válido para os certificados deve ser passado. Diretório [{$dir}] não foi localizado."
             );
         }
         $this->certsDir = trim($dir);
         if (strlen(trim($cnpj))!= 14) {
             throw new Exception\InvalidArgumentException(
-                "Um CNPJ válido deve ser passado e são permitidos apenas números. Valor passado [$cnpj]."
+                "Um CNPJ válido deve ser passado e são permitidos apenas números. Valor passado [{$cnpj}]."
             );
         }
         $this->cnpj = trim($cnpj);

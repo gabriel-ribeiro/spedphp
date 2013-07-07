@@ -24,7 +24,7 @@ class Mail {
     
     public function __construct() {
         $this->mail = new \PHPMailer();
-        $configuration = include __DIR__ . '/../../../config/sped.config.php';
+        $configuration = include __DIR__ . '/../../../config/mail.config.php';
         
         $this->mail->IsSMTP();
         $this->mail->Host = $configuration['mail']['smtp_options']['host'];

@@ -10,7 +10,7 @@
  * @package   Spedphp
  */
 
-namespace SpedPHP\Common\DataTime;
+namespace SpedPHP\Common\DateTime;
 
 class DateTime
 {
@@ -18,7 +18,7 @@ class DateTime
     {
         if ($dhs) {
             $aDH = explode('T', $dhs);
-            $aDH = explode('-', $aDH[0]);
+            $adDH = explode('-', $aDH[0]);
             $atDH = explode(':', $aDH[1]);
             $timestampDH = mktime($atDH[0], $atDH[1], $atDH[2], $adDH[1], $adDH[2], $adDH[0]);
             return $timestampDH;

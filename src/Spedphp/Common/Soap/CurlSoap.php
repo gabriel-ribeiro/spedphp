@@ -231,28 +231,29 @@ class CurlSoap
         //fecha a conexão
         curl_close($oCurl);
         //coloca as informações em uma variável
+        
         $txtInfo ="";
-        $txtInfo .= "URL=$info[url]\n";
-        $txtInfo .= "Content type=$info[content_type]\n";
-        $txtInfo .= "Http Code=$info[http_code]\n";
-        $txtInfo .= "Header Size=$info[header_size]\n";
-        $txtInfo .= "Request Size=$info[request_size]\n";
-        $txtInfo .= "Filetime=$info[filetime]\n";
-        $txtInfo .= "SSL Verify Result=$info[ssl_verify_result]\n";
-        $txtInfo .= "Redirect Count=$info[redirect_count]\n";
-        $txtInfo .= "Total Time=$info[total_time]\n";
-        $txtInfo .= "Namelookup=$info[namelookup_time]\n";
-        $txtInfo .= "Connect Time=$info[connect_time]\n";
-        $txtInfo .= "Pretransfer Time=$info[pretransfer_time]\n";
-        $txtInfo .= "Size Upload=$info[size_upload]\n";
-        $txtInfo .= "Size Download=$info[size_download]\n";
-        $txtInfo .= "Speed Download=$info[speed_download]\n";
-        $txtInfo .= "Speed Upload=$info[speed_upload]\n";
-        $txtInfo .= "Download Content Length=$info[download_content_length]\n";
-        $txtInfo .= "Upload Content Length=$info[upload_content_length]\n";
-        $txtInfo .= "Start Transfer Time=$info[starttransfer_time]\n";
-        $txtInfo .= "Redirect Time=$info[redirect_time]\n";
-        $txtInfo .= "Certinfo=$info[certinfo]\n";
+        $txtInfo .= "URL={$info['url']}\n";
+        $txtInfo .= "Content type={$info['content_type']}\n";
+        $txtInfo .= "Http Code={$info['http_code']}\n";
+        $txtInfo .= "Header Size={$info['header_size']}\n";
+        $txtInfo .= "Request Size={$info['request_size']}\n";
+        $txtInfo .= "Filetime={$info['filetime']}\n";
+        $txtInfo .= "SSL Verify Result={$info['ssl_verify_result']}\n";
+        $txtInfo .= "Redirect Count={$info['redirect_count']}\n";
+        $txtInfo .= "Total Time={$info['total_time']}\n";
+        $txtInfo .= "Namelookup={$info['namelookup_time']}\n";
+        $txtInfo .= "Connect Time={$info['connect_time']}\n";
+        $txtInfo .= "Pretransfer Time={$info['pretransfer_time']}\n";
+        $txtInfo .= "Size Upload={$info['size_upload']}\n";
+        $txtInfo .= "Size Download={$info['size_download']}\n";
+        $txtInfo .= "Speed Download={$info['speed_download']}\n";
+        $txtInfo .= "Speed Upload={$info['speed_upload']}\n";
+        $txtInfo .= "Download Content Length={$info['download_content_length']}\n";
+        $txtInfo .= "Upload Content Length={$info['upload_content_length']}\n";
+        $txtInfo .= "Start Transfer Time={$info['starttransfer_time']}\n";
+        $txtInfo .= "Redirect Time={$info['redirect_time']}\n";
+        //$txtInfo .= "Certinfo={$info['certinfo']}\n";
         //carrega a variavel debug
         $this->soapDebug = $data."\n\n".$txtInfo."\n".$resposta;
         //retorna

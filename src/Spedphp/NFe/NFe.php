@@ -16,6 +16,8 @@ use Spedphp\Common\Certificate\Pkcs12;
 use Spedphp\Common\Soap;
 use Spedphp\Common\Exception;
 use Spedphp\Common\DateTime\DateTime;
+use SpedPHP\Common\TipoAmbiente;
+use SpedPHP\Common\Exception\InvalidArgumentException;
 
 if (!defined('PATH_ROOT')) {
     define('PATH_ROOT', dirname(realpath(__FILE__)).DIRECTORY_SEPARATOR);
@@ -97,8 +99,9 @@ class NFe
 
     private $UrlPortal='http://www.portalfiscal.inf.br/nfe';
     
-    public function __construct($cnpj, $certsdir)
+    public function __construct($cnpj, $certsdir = null)
     {
+        $certsdir = (is_null($certsdir)) ? __DIR__ . '/../../certs' : $certsdir;
         $this->oPkcs12 = new Pkcs12($certsdir, $cnpj);
         
     }//fim __construct
@@ -130,13 +133,18 @@ class NFe
     
     public function isOnline($sigla = '', $tpAmb = '', &$response = '')
     {
-        if ($tpAmb == '1') {
+        if ($tpAmb == TipoAmbiente::PRODUCAO) {
             $ambiente = 'producao';
         } else {
             $ambiente = 'homologacao';
         }
+        
+        if(!isset($this->cUFlist[$sigla])) {
+            throw new InvalidArgumentException("UF '{$sigla}' não encontrado.");
+        }
         //recupera o numero da SEFAZ
         $cUF = $this->cUFlist[$sigla];
+        
         //recupera os dados de acesso a SEFAZ
         $aURL = $this->loadSefaz($sigla, $ambiente);
         //identificação do serviço
@@ -149,6 +157,7 @@ class NFe
         $metodo = $aURL[$servico]['method'];
         //montagem do namespace do serviço
         $namespace = $this->UrlPortal.'/wsdl/'.$servico.'2';
+        
         //montagem do cabeçalho da comunicação SOAP
         //ATENÇÂO NESSAS MONTAGENS NÃO PODE HAVER ESPAÇOS ENTRE ><
         $cabec = '';
