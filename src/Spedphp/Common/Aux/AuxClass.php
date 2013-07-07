@@ -16,7 +16,7 @@ use Common\Exception;
 /**
  * 
  */
-class AuxClass
+class Utils
 {
  
     public $errMsg = '';
