@@ -30,10 +30,10 @@
                 <antcall target="pdepend"/>
                 <antcall target="phpmd"/>
             </sequential>
-            <antcall target="phpcpd"/>
+            <!-- <antcall target="phpcpd"/> -->
             <antcall target="phpcs"/>
             <antcall target="phpdoc"/>
-            <antcall target="phploc"/>
+            <!-- <antcall target="phploc"/> -->
         </parallel>
     </target>
 
